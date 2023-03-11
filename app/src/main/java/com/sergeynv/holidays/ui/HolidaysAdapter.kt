@@ -1,5 +1,6 @@
 package com.sergeynv.holidays.ui
 
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -16,7 +17,6 @@ class HolidaysAdapter(
     private val holidaysHolderB: CountryHolidaysHolder,
     lifecycleOwner: LifecycleOwner
 ) : RecyclerView.Adapter<HolidaysAdapter.ViewHolder>() {
-    private val dateFormat = SimpleDateFormat(DATE_FORMAT, Locale.getDefault())
     private var allHolidays: List<HolidayHolder>? = null
 
     init {
@@ -25,20 +25,30 @@ class HolidaysAdapter(
     }
 
     private fun recompute() {
+        Log.d(TAG, "recompute()")
+
         val map: MutableMap<Date, Pair<Holiday?, Holiday?>> = mutableMapOf()
-        holidaysHolderA.holidays.value?.forEach {
-            map[it.date] = (it to null)
-        }
-        holidaysHolderB.holidays.value?.forEach {
-            map[it.date] = map[it.date]?.copy(second = it) ?: (null to it)
-        }
+        holidaysHolderA.holidays.value
+            .also { Log.d(TAG, "  a: $it") }
+            ?.forEach {
+                map[it.date] = (it to null)
+            }
+        holidaysHolderB.holidays.value
+            .also { Log.d(TAG, "  b: $it") }
+            ?.forEach {
+                map[it.date] = map[it.date]?.copy(second = it) ?: (null to it)
+            }
 
         allHolidays = map.map {
             HolidayHolder(
                 date = it.key,
                 inA = it.value.first,
-                inB = it.value.second)
-        }.takeUnless { it.isEmpty() }?.sortedBy { it.date }
+                inB = it.value.second
+            )
+        }
+            .sortedBy { it.date }
+            .also { Log.d(TAG, "  all:\n${it.joinToString("\n")}") }
+            .takeUnless { it.isEmpty() }
 
         notifyDataSetChanged()
     }
@@ -72,9 +82,20 @@ class HolidaysAdapter(
                 "inA and inB must NOT be null at the same time"
             }
         }
+
+        override fun toString(): String = """
+            ${dateFormat.format(date)}
+               in A: $inA
+               in B: $inB
+        """.trimIndent()
     }
 
     companion object {
-        private const val DATE_FORMAT = "EEE, MMM d" // Wed, Jul 4
+        private const val TAG = "HolidaysAdapter"
+
+        private const val DATE_FORMAT_PATTERN = "EEE, MMM d" // Wed, Jul 4
+        private val dateFormat by lazy {
+            SimpleDateFormat(DATE_FORMAT_PATTERN, Locale.getDefault())
+        }
     }
 }

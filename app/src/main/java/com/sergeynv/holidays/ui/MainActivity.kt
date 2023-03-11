@@ -84,13 +84,13 @@ class MainActivity : AppCompatActivity(), OnItemSelectedListener {
         (parent.adapter.getItem(position) as Country?).let {
             when (parent.id) {
                 R.id.spinner_countryA -> viewModel.holidaysHolderA.country = it
-                R.id.spinner_countryB -> viewModel.holidaysHolderA.country = it
+                R.id.spinner_countryB -> viewModel.holidaysHolderB.country = it
             }
         }
 
     override fun onNothingSelected(parent: AdapterView<*>) = when (parent.id) {
         R.id.spinner_countryA -> viewModel.holidaysHolderA.country = null
-        R.id.spinner_countryB -> viewModel.holidaysHolderA.country = null
+        R.id.spinner_countryB -> viewModel.holidaysHolderB.country = null
         else -> Unit
     }
 
