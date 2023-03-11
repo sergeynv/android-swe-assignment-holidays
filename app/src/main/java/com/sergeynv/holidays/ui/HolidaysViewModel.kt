@@ -84,56 +84,6 @@ class HolidaysViewModel : ViewModel() {
             holidaysHolderB.holidays?.let { combined.addAll(it) }
         }.takeUnless { it.isEmpty() }
 
-    private class CountryHolidaysHolder(
-        private val scope: CoroutineScope,
-        private val holidaysService: HolidaysService
-    ) {
-        var country: Country? = null
-            private set
-        var holidays: List<Holiday>? = null
-            private set
-        val isFetching: LiveData<Boolean>
-            get() = _isFetching
-
-        private var year: Int? = null
-        private var fetchingJob: Job? = null
-        private val _isFetching = MutableLiveData(false)
-
-        /**
-         * Remove stored [holidays] (if any), cancel on-going [fetchingJob] (if any) and start
-         * fetching holidays in the given [country] in the given [year].
-         */
-        @MainThread
-        fun fetchHolidays(country: Country, year: Int) {
-            if (country == this.country && year == this.year) return
-            clear()
-
-            this.country = country
-            this.year = year
-
-            fetchingJob = scope.launch {
-                Log.d(TAG, "getHolidays(${country.code}, ${year}) starting...")
-                _isFetching.value = true
-                try {
-                    holidays = holidaysService.getHolidays(country.code, year)
-                        .also { Log.d(TAG, "getHolidays(${country.code}, $year) finished: $it") }
-                        .holidays
-                } finally {
-                    _isFetching.value = false
-                }
-            }
-        }
-
-        @MainThread
-        fun clear() {
-            fetchingJob?.cancel()?.also {
-                fetchingJob = null
-            }
-            country = null
-            year = null
-        }
-    }
-
     companion object {
         private const val TAG = "HolidaysViewModel"
     }
