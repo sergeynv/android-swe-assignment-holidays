@@ -16,33 +16,43 @@ class CountryHolidaysHolder(
     private val holidaysService: HolidaysService
 ) {
     var country: Country? = null
-        private set
-    var holidays: List<Holiday>? = null
-        private set
-    val isFetching: LiveData<Boolean>
-        get() = _isFetching
+        @MainThread set(value) {
+            field = value
+            clearAndMaybeRefetchHolidays()
+        }
+    var year: Int? = null
+        @MainThread set(value) {
+            field = value
+            clearAndMaybeRefetchHolidays()
+        }
 
-    private var year: Int? = null
-    private var fetchingJob: Job? = null
+    private val _holidays = MutableLiveData<List<Holiday>?>(null)
+    var holidays: LiveData<List<Holiday>?> = _holidays
+
     private val _isFetching = MutableLiveData(false)
+    val isFetching: LiveData<Boolean> = _isFetching
+
+    private var fetchingJob: Job? = null
+
+    @MainThread
+    private fun clearAndMaybeRefetchHolidays() {
+        clear()
+        if (country != null && year != null) {
+            fetchHolidays(country!!, year!!)
+        }
+    }
 
     /**
      * Remove stored [holidays] (if any), cancel on-going [fetchingJob] (if any) and start
      * fetching holidays in the given [country] in the given [year].
      */
     @MainThread
-    fun fetchHolidays(country: Country, year: Int) {
-        if (country == this.country && year == this.year) return
-        clear()
-
-        this.country = country
-        this.year = year
-
+    private fun fetchHolidays(country: Country, year: Int) {
         fetchingJob = scope.launch {
             log("getHolidays(${country.code}, ${year}) starting...")
             _isFetching.value = true
             try {
-                holidays = holidaysService.getHolidays(country.code, year)
+                _holidays.value = holidaysService.getHolidays(country.code, year)
                     .also { log("getHolidays(${country.code}, $year) finished: $it") }
                     .holidays
             } finally {
@@ -52,12 +62,12 @@ class CountryHolidaysHolder(
     }
 
     @MainThread
-    fun clear() {
+    private fun clear() {
         fetchingJob?.cancel()?.also {
             fetchingJob = null
         }
-        country = null
-        year = null
+        _holidays.value = null
+        _isFetching.value = false
     }
 
     companion object {
