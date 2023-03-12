@@ -8,7 +8,9 @@ import androidx.lifecycle.viewModelScope
 import com.sergeynv.holidays.api.HolidaysService
 import com.sergeynv.holidays.data.Country
 import com.sergeynv.holidays.utils.currentYear
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class HolidaysViewModel : ViewModel() {
     val countries: LiveData<List<Country>>
@@ -22,7 +24,7 @@ class HolidaysViewModel : ViewModel() {
 
         val _countries = MutableLiveData<List<Country>>()
         countries = _countries
-        val _isFetchingCountries = MutableLiveData<Boolean>(false)
+        val _isFetchingCountries = MutableLiveData(false)
         isFetchingCountries = _isFetchingCountries
         viewModelScope.launch {
             Log.d(TAG, "Fetching country list...")
@@ -31,6 +33,7 @@ class HolidaysViewModel : ViewModel() {
                 _countries.value = holidaysService.getCountries()
                     .also { Log.d(TAG, "getCountries() finished: $it") }
                     .countries
+                    .let { list -> withContext(Dispatchers.Default) { list.sortedBy { it.name } } }
             } finally {
                 _isFetchingCountries.value = false
             }
