@@ -8,6 +8,7 @@ import android.widget.TextView
 import androidx.lifecycle.LifecycleOwner
 import androidx.recyclerview.widget.RecyclerView
 import com.sergeynv.holidays.data.Holiday
+import java.lang.StringBuilder
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -27,23 +28,19 @@ class HolidaysAdapter(
     private fun recompute() {
         Log.d(TAG, "recompute()")
 
-        val map: MutableMap<Date, Pair<Holiday?, Holiday?>> = mutableMapOf()
+        val map: MutableMap<Date, Pair<MutableList<Holiday>, MutableList<Holiday>>> = mutableMapOf()
         holidaysHolderA.holidays.value
             .also { Log.d(TAG, "  a: $it") }
-            ?.forEach {
-                map[it.date] = (it to null)
-            }
+            ?.forEach { map.getOrPut(it.date).first.add(it) }
         holidaysHolderB.holidays.value
             .also { Log.d(TAG, "  b: $it") }
-            ?.forEach {
-                map[it.date] = map[it.date]?.copy(second = it) ?: (null to it)
-            }
+            ?.forEach { map.getOrPut(it.date).second.add(it) }
 
         allHolidays = map.map {
             HolidayHolder(
                 date = it.key,
-                inA = it.value.first,
-                inB = it.value.second
+                inA = it.value.first.takeUnless { holidays -> holidays.isEmpty() },
+                inB = it.value.second.takeUnless { holidays -> holidays.isEmpty() },
             )
         }
             .sortedBy { it.date }
@@ -63,7 +60,11 @@ class HolidaysAdapter(
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         allHolidays?.let {
             it[position].apply {
-                holder.textView.text = "${dateFormat.format(date)} - ${inA?.name} - ${inB?.name}"
+                holder.textView.text = """
+                    ${dateFormat.format(date)}
+                      ${inA?.toShortString() ?: "-"}
+                      ${inB?.toShortString() ?: "-"}
+                    """.trimIndent()
             }
         }
     }
@@ -72,10 +73,16 @@ class HolidaysAdapter(
         val textView: TextView = view.findViewById(android.R.id.text1)
     }
 
+    /**
+     * Note: there may be more than 1 holiday on the same day.
+     * For example: in Germany on May 26th, 2022 it's the "Father's Day" and
+     * the "Feast of the Ascension of Jesus Christ".
+     * https://holidayapi.com/v1/holidays?country=DE&year=2022&key=8780ae23-9cdd-4616-8b4e-c2b3107c2cdd&pretty
+     */
     private data class HolidayHolder(
         val date: Date,
-        val inA: Holiday?,
-        val inB: Holiday?
+        val inA: List<Holiday>?,
+        val inB: List<Holiday>?
     ) {
         init {
             require(inA != null || inB != null) {
@@ -97,5 +104,13 @@ class HolidaysAdapter(
         private val dateFormat by lazy {
             SimpleDateFormat(DATE_FORMAT_PATTERN, Locale.getDefault())
         }
+
+        private fun MutableMap<Date, Pair<MutableList<Holiday>, MutableList<Holiday>>>.getOrPut(
+            date: Date
+        ) = getOrPut(date) { (mutableListOf<Holiday>() to mutableListOf()) }
+
+        private fun List<Holiday>.toShortString(): String = StringBuilder(first().name)
+            .also { if (size > 1) it.append(" +${size - 1} more") }
+            .toString()
     }
 }
