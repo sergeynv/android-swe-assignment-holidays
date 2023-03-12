@@ -11,7 +11,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 
-class CountryHolidaysHolder(
+internal class CountryHolidaysHolder(
     private val scope: CoroutineScope,
     private val holidaysService: HolidaysService
 ) {

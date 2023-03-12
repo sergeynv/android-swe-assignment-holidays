@@ -8,8 +8,7 @@ import android.widget.TextView
 import com.sergeynv.holidays.data.Country
 import java.lang.RuntimeException
 
-class CountryListSpinnerAdapter(private val countries: List<Country>) : BaseAdapter() {
-
+internal class CountryListSpinnerAdapter(private val countries: List<Country>) : BaseAdapter() {
     override fun getCount(): Int = countries.size + 1
 
     override fun getItem(position: Int): Country? =

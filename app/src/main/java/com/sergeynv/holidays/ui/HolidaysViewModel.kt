@@ -12,7 +12,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-class HolidaysViewModel : ViewModel() {
+internal class HolidaysViewModel : ViewModel() {
     val countries: LiveData<List<Country>>
     val isFetchingCountries: LiveData<Boolean>
 
