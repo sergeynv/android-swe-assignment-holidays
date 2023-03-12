@@ -3,12 +3,15 @@ package com.sergeynv.holidays.ui
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
+import android.view.View.GONE
+import android.view.View.VISIBLE
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.lifecycle.LifecycleOwner
 import androidx.recyclerview.widget.RecyclerView
+import com.sergeynv.holidays.R
+import com.sergeynv.holidays.data.Country
 import com.sergeynv.holidays.data.Holiday
-import java.lang.StringBuilder
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -52,25 +55,93 @@ class HolidaysAdapter(
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder =
         LayoutInflater.from(parent.context)
-            .inflate(android.R.layout.simple_list_item_1, parent, false)
+            .inflate(R.layout.list_item_holiday, parent, false)
             .let { ViewHolder(it) }
 
     override fun getItemCount(): Int = allHolidays?.size ?: 0
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        allHolidays?.let {
-            it[position].apply {
-                holder.textView.text = """
-                    ${dateFormat.format(date)}
-                      ${inA?.toShortString() ?: "-"}
-                      ${inB?.toShortString() ?: "-"}
-                    """.trimIndent()
-            }
-        }
+        holder.bind(allHolidays!![position], holidaysHolderA.country, holidaysHolderB.country)
     }
 
     class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
-        val textView: TextView = view.findViewById(android.R.id.text1)
+        private val monthDay: TextView = view.findViewById(R.id.date_month_day)
+        private val weekday: TextView = view.findViewById(R.id.date_weekday)
+        private val countryCodeA: TextView = view.findViewById(R.id.country_code_a)
+        private val countryCodeB: TextView = view.findViewById(R.id.country_code_b)
+        private val holidayInAContainer: View = view.findViewById(R.id.a_holidays_container)
+        private val holidayInAName: TextView = holidayInAContainer.findViewById(R.id.a_holiday_name)
+        private val holidayInAMore: TextView =
+            holidayInAContainer.findViewById(R.id.a_more_holidays)
+        private val holidayInBContainer: View = view.findViewById(R.id.b_holidays_container)
+        private val holidayInBName: TextView = holidayInBContainer.findViewById(R.id.b_holiday_name)
+        private val holidayInBMore: TextView =
+            holidayInBContainer.findViewById(R.id.b_more_holidays)
+
+        internal fun bind(
+            holidayHolder: HolidayHolder,
+            countryA: Country?,
+            countryB: Country?
+        ) = with(holidayHolder) {
+            // Sanity checks.
+            require(inA != null || inB != null)
+            require(inA == null || countryA != null && inA.isNotEmpty())
+            require(inB == null || countryB != null && inB.isNotEmpty())
+
+            // Display the date.
+            monthDay.text = monthDayFormat.format(date)
+            weekday.text = weekdayFormat.format(date)
+
+            // Display the country codes.
+            if (inBothCountries) {
+                countryCodeB.visibility = VISIBLE
+                countryCodeA.text = countryA!!.code
+                countryCodeB.text = countryB!!.code
+            } else {
+                countryCodeB.visibility = GONE
+                countryCodeA.text = (if (inA != null) countryA else countryB)!!.code
+            }
+
+            // Display actual holidays
+            if (inOneCountry || canCombine(inA!!, inB!!)) {
+                val holidays = inA ?: inB!!
+                holidayInAName.text = holidays.first().name
+                holidayInAMore.apply {
+                    if (holidays.size > 1) {
+                        visibility = VISIBLE
+                        text = "and ${holidays.size - 1} more"
+                    } else {
+                        visibility = GONE
+                    }
+                }
+
+                holidayInBContainer.visibility = GONE
+            } else {
+                holidayInAName.text = inA.first().name
+                holidayInAMore.apply {
+                    if (inA.size > 1) {
+                        visibility = VISIBLE
+                        text = "and ${inA.size - 1} more"
+                    } else {
+                        visibility = GONE
+                    }
+                }
+
+                holidayInBContainer.visibility = VISIBLE
+                holidayInBName.text = inA.first().name
+                holidayInBMore.apply {
+                    if (inB.size > 1) {
+                        visibility = VISIBLE
+                        text = "and ${inB.size - 1} more"
+                    } else {
+                        visibility = GONE
+                    }
+                }
+            }
+        }
+
+        private fun canCombine(inA: List<Holiday>, inB: List<Holiday>) =
+            inA.first().name == inB.first().name && inA.size == inB.size
     }
 
     /**
@@ -79,16 +150,21 @@ class HolidaysAdapter(
      * the "Feast of the Ascension of Jesus Christ".
      * https://holidayapi.com/v1/holidays?country=DE&year=2022&key=8780ae23-9cdd-4616-8b4e-c2b3107c2cdd&pretty
      */
-    private data class HolidayHolder(
+    internal data class HolidayHolder(
         val date: Date,
-        val inA: List<Holiday>?,
-        val inB: List<Holiday>?
+        val inA: List<Holiday>?, // Either null or not(!) empty
+        val inB: List<Holiday>?  // Either null or not(!) empty
     ) {
         init {
+            inA?.let { require(it.isNotEmpty()) }
+            inB?.let { require(it.isNotEmpty()) }
             require(inA != null || inB != null) {
                 "inA and inB must NOT be null at the same time"
             }
         }
+
+        val inOneCountry: Boolean = inA == null || inB == null
+        val inBothCountries: Boolean = inA != null && inB != null
 
         override fun toString(): String = """
             ${dateFormat.format(date)}
@@ -104,6 +180,9 @@ class HolidaysAdapter(
         private val dateFormat by lazy {
             SimpleDateFormat(DATE_FORMAT_PATTERN, Locale.getDefault())
         }
+
+        private val monthDayFormat by lazy { SimpleDateFormat("MMM d", Locale.getDefault()) }
+        private val weekdayFormat by lazy { SimpleDateFormat("EEEE", Locale.getDefault()) }
 
         private fun MutableMap<Date, Pair<MutableList<Holiday>, MutableList<Holiday>>>.getOrPut(
             date: Date
