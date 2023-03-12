@@ -38,7 +38,7 @@ internal class DayHolidaysViewHolder(view: View) : RecyclerView.ViewHolder(view)
         weekday.text = weekdayFormat.format(date)
 
         // Display the country codes.
-        if (inBothCountries) {
+        if (isInBoth) {
             countryCodeB.visibility = View.VISIBLE
             countryCodeA.text = countryA!!.code
             countryCodeB.text = countryB!!.code
@@ -48,7 +48,8 @@ internal class DayHolidaysViewHolder(view: View) : RecyclerView.ViewHolder(view)
         }
 
         // Display actual holidays
-        if (inOneCountry || canCombine(inA!!, inB!!)) {
+        if (!isInBoth || canCombine(inA!!, inB!!)) {
+            // We'll need to show only 1 "line".
             val holidays = inA ?: inB!!
             holidayInAName.text = holidays.first().name
             holidayInAMore.apply {
@@ -62,6 +63,7 @@ internal class DayHolidaysViewHolder(view: View) : RecyclerView.ViewHolder(view)
 
             holidayInBContainer.visibility = View.GONE
         } else {
+            // We'll need to show  both "lines".
             holidayInAName.text = inA.first().name
             holidayInAMore.apply {
                 if (inA.size > 1) {

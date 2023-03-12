@@ -6,7 +6,13 @@ import android.view.ViewGroup
 import androidx.lifecycle.LifecycleOwner
 import androidx.recyclerview.widget.RecyclerView
 import com.sergeynv.holidays.R
+import com.sergeynv.holidays.data.Country
 import com.sergeynv.holidays.data.Holiday
+import com.sergeynv.holidays.ui.HolidaysFilterStrategy.IN_A_NOT_IN_B
+import com.sergeynv.holidays.ui.HolidaysFilterStrategy.IN_BOTH
+import com.sergeynv.holidays.ui.HolidaysFilterStrategy.IN_B_NOT_IN_A
+import com.sergeynv.holidays.ui.HolidaysFilterStrategy.IN_EITHER
+import java.lang.RuntimeException
 import java.util.Date
 
 internal class HolidaysAdapter(
@@ -15,46 +21,76 @@ internal class HolidaysAdapter(
     lifecycleOwner: LifecycleOwner
 ) : RecyclerView.Adapter<DayHolidaysViewHolder>() {
     private var allHolidays: List<DayHolidaysHolder>? = null
+    private var filteredHolidays: List<DayHolidaysHolder>? = null
 
     // We only take this into account if we have holidays for both(!) countries.
     // If we have holidays for only one of the two counties, this is ignored, and we simply show all
     // holidays.
-    var filterStrategy = HolidaysFilterStrategy.IN_EITHER
+    var filterStrategy = IN_EITHER
         set(value) {
-            if (field != value) {
-                field = value
-                notifyDataSetChanged()
-            }
+            field = value
+            filter()
+            notifyDataSetChanged()
         }
 
     init {
-        holidaysHolderA.holidays.observe(lifecycleOwner) { recompute() }
-        holidaysHolderB.holidays.observe(lifecycleOwner) { recompute() }
+        fun fullRecompute() {
+            compute()
+            filter()
+            notifyDataSetChanged()
+        }
+        holidaysHolderA.holidays.observe(lifecycleOwner) { fullRecompute() }
+        holidaysHolderB.holidays.observe(lifecycleOwner) { fullRecompute() }
     }
 
-    private fun recompute() {
-        Log.d(TAG, "recompute()")
+    private val countryA: Country?
+        get() = holidaysHolderA.country
+    private val countryB
+        get() = holidaysHolderB.country
 
-        val map: MutableMap<Date, Pair<MutableList<Holiday>, MutableList<Holiday>>> = mutableMapOf()
-        holidaysHolderA.holidays.value
-            .also { Log.d(TAG, "  a: $it") }
-            ?.forEach { map.getOrPut(it.date).first.add(it) }
-        holidaysHolderB.holidays.value
-            .also { Log.d(TAG, "  b: $it") }
-            ?.forEach { map.getOrPut(it.date).second.add(it) }
+    private val holidaysInA
+        get() = holidaysHolderA.holidays.value
+    private val holidaysInB
+        get() = holidaysHolderB.holidays.value
 
-        allHolidays = map.map {
+    private fun compute() {
+        Log.d(TAG, "compute()")
+
+        val dateToHolidaysMap =
+            mutableMapOf<Date, Pair<MutableList<Holiday>, MutableList<Holiday>>>()
+                .apply {
+                    holidaysInA?.forEach { getOrPut(it.date).first.add(it) }
+                    holidaysInB?.forEach { getOrPut(it.date).second.add(it) }
+                }
+
+        allHolidays = dateToHolidaysMap.map {
             DayHolidaysHolder(
                 date = it.key,
                 inA = it.value.first.takeUnless { holidays -> holidays.isEmpty() },
                 inB = it.value.second.takeUnless { holidays -> holidays.isEmpty() },
             )
-        }
-            .sortedBy { it.date }
+        }.sortedBy { it.date }
             .also { Log.d(TAG, "  all:\n${it.joinToString("\n")}") }
             .takeUnless { it.isEmpty() }
+    }
 
-        notifyDataSetChanged()
+    private fun filter() {
+        Log.d(TAG, "filter()")
+
+        if (holidaysInA == null || holidaysInB == null || filterStrategy == IN_EITHER) {
+            // We do not filter unless we have holidays for both countries!
+            filteredHolidays = allHolidays
+            return
+        }
+
+        filteredHolidays = allHolidays?.filter {
+            when(filterStrategy) {
+                IN_BOTH -> it.isInBoth
+                IN_A_NOT_IN_B -> it.isOnlyInA
+                IN_B_NOT_IN_A -> it.isOnlyInB
+                IN_EITHER -> throw RuntimeException("This is unreachable") // we handled this above.
+            }
+        }
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) =
@@ -62,14 +98,10 @@ internal class HolidaysAdapter(
             .inflate(R.layout.list_item_holiday, parent, false)
             .let { DayHolidaysViewHolder(it) }
 
-    override fun getItemCount(): Int = allHolidays?.size ?: 0
+    override fun getItemCount(): Int = filteredHolidays?.size ?: 0
 
     override fun onBindViewHolder(holder: DayHolidaysViewHolder, position: Int) {
-        holder.bind(
-            holidayHolder = allHolidays!![position],
-            countryA = holidaysHolderA.country,
-            countryB = holidaysHolderB.country
-        )
+        holder.bind(holidayHolder = filteredHolidays!![position], countryA, countryB)
     }
 
     companion object {

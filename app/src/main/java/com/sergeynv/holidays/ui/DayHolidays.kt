@@ -24,8 +24,9 @@ internal data class DayHolidaysHolder(
         }
     }
 
-    val inOneCountry: Boolean = inA == null || inB == null
-    val inBothCountries: Boolean = inA != null && inB != null
+    val isInBoth: Boolean = inA != null && inB != null
+    val isOnlyInA: Boolean = inA != null && inB == null
+    val isOnlyInB: Boolean = inA == null && inB != null
 
     override fun toString(): String = """
         ${dateFormat.format(date)}
