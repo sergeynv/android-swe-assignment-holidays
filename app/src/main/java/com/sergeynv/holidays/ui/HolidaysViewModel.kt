@@ -19,6 +19,8 @@ class HolidaysViewModel : ViewModel() {
     val holidaysHolderA: CountryHolidaysHolder
     val holidaysHolderB: CountryHolidaysHolder
 
+    var selectedHolidaysFilterStrategy = HolidaysFilterStrategy.IN_EITHER
+
     init {
         val holidaysService = HolidaysService.retrofit
 

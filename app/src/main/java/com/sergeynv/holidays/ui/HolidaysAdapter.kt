@@ -23,6 +23,17 @@ class HolidaysAdapter(
 ) : RecyclerView.Adapter<HolidaysAdapter.ViewHolder>() {
     private var allHolidays: List<HolidayHolder>? = null
 
+    // We only take this into account if we have holidays for both(!) countries.
+    // If we have holidays for only one of the two counties, this is ignored, and we simply show all
+    // holidays.
+    var filterStrategy = HolidaysFilterStrategy.IN_EITHER
+        set(value) {
+            if (field != value) {
+                field = value
+                notifyDataSetChanged()
+            }
+        }
+
     init {
         holidaysHolderA.holidays.observe(lifecycleOwner) { recompute() }
         holidaysHolderB.holidays.observe(lifecycleOwner) { recompute() }

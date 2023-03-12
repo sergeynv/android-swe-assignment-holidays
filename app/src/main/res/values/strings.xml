@@ -1,3 +1,10 @@
 <resources>
     <string name="app_name">My Application</string>
+
+    <!-- Description for HolidayFilterStrategy-s -->
+    <string name="holidays_filter_strategy_either">in either A or B or both</string>
+    <string name="holidays_filter_strategy_both">in both A and B</string>
+    <string name="holidays_filter_strategy_in_a_not_in_b">in A, but not in B</string>
+    <string name="holidays_filter_strategy_in_b_not_in_a">in B, but not in A</string>
+
 </resources>
