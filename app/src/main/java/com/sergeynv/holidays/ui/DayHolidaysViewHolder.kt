@@ -24,7 +24,7 @@ internal class DayHolidaysViewHolder(view: View) : RecyclerView.ViewHolder(view)
         holidayInBContainer.findViewById(R.id.b_more_holidays)
 
     internal fun bind(
-        holidayHolder: DayHolidaysHolder,
+        holidayHolder: DayHolidays,
         countryA: Country?,
         countryB: Country?
     ) = with(holidayHolder) {

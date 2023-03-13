@@ -20,8 +20,8 @@ internal class HolidaysAdapter(
     private val holidaysHolderB: CountryHolidaysHolder,
     lifecycleOwner: LifecycleOwner
 ) : RecyclerView.Adapter<DayHolidaysViewHolder>() {
-    private var allHolidays: List<DayHolidaysHolder>? = null
-    private var filteredHolidays: List<DayHolidaysHolder>? = null
+    private var allHolidays: List<DayHolidays>? = null
+    private var filteredHolidays: List<DayHolidays>? = null
 
     // We only take this into account if we have holidays for both(!) countries.
     // If we have holidays for only one of the two counties, this is ignored, and we simply show all
@@ -64,7 +64,7 @@ internal class HolidaysAdapter(
                 }
 
         allHolidays = dateToHolidaysMap.map {
-            DayHolidaysHolder(
+            DayHolidays(
                 date = it.key,
                 inA = it.value.first.takeUnless { holidays -> holidays.isEmpty() },
                 inB = it.value.second.takeUnless { holidays -> holidays.isEmpty() },

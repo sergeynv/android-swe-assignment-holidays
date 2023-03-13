@@ -27,7 +27,7 @@ internal class CountryHolidaysHolder(
         }
 
     private val _holidays = MutableLiveData<List<Holiday>?>(null)
-    var holidays: LiveData<List<Holiday>?> = _holidays
+    val holidays: LiveData<List<Holiday>?> = _holidays
 
     private val _isFetching = MutableLiveData(false)
     val isFetching: LiveData<Boolean> = _isFetching

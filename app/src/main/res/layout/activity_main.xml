@@ -31,7 +31,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Country A" />
+                android:text="@string/label_country_a" />
 
             <Spinner
                 android:id="@+id/spinner_countryA"
@@ -50,7 +50,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Country B" />
+                android:text="@string/label_country_b" />
 
             <Spinner
                 android:id="@+id/spinner_countryB"
@@ -71,7 +71,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Display holidays" />
+            android:text="@string/label_display_holidays" />
 
         <Spinner
             android:id="@+id/spinner_filterStrategy"
