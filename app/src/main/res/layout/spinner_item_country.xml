@@ -1,25 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="horizontal"
-    android:padding="4dp"
+    android:padding="2dp"
     android:gravity="center_vertical">
 
     <ImageView
         android:id="@+id/imageView_flag"
-        android:layout_width="32dp"
+        android:layout_width="48dp"
         android:layout_height="32dp"
-        android:background="?attr/colorSecondary"/>
+        tools:layout_height="32dp"
+        tools:background="?attr/colorPrimary" />
 
     <TextView
         android:id="@+id/textView_name"
         style="?android:attr/spinnerItemStyle"
-        android:singleLine="true"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginStart="4dp"
         android:ellipsize="marquee"
-        android:textAlignment="inherit"/>
+        android:singleLine="true"/>
 
 </LinearLayout>

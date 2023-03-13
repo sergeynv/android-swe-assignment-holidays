@@ -6,3 +6,4 @@
 
 ### Dependencies
 - [Moshi](https://github.com/square/moshi)
+- [Coil](https://coil-kt.github.io/coil/)
