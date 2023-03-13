@@ -4,7 +4,9 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.BaseAdapter
+import android.widget.ImageView
 import android.widget.TextView
+import com.sergeynv.holidays.R
 import com.sergeynv.holidays.data.Country
 import java.lang.RuntimeException
 
@@ -31,15 +33,19 @@ internal class CountryListSpinnerAdapter(private val countries: List<Country>) :
 
     private fun createViewHolder(parent: ViewGroup): ViewHolder {
         val view = LayoutInflater.from(parent.context)
-            .inflate(android.R.layout.simple_spinner_item, parent, false)
+            .inflate(R.layout.spinner_item_country, parent, false)
         return ViewHolder(view)
     }
 
-    private fun bindViewHolder(position: Int, viewHolder: ViewHolder) {
-        viewHolder.textView.text = getItem(position)?.name ?: "-"
+    private fun bindViewHolder(position: Int, viewHolder: ViewHolder) = viewHolder.apply {
+        val country = getItem(position)
+        nameLabel.text = country?.name ?: "-"
+        flagIcon.visibility = if (country != null) View.VISIBLE else View.INVISIBLE
+        // TODO: start loading flag
     }
 
     private class ViewHolder(val view: View) {
-        val textView: TextView = view.findViewById(android.R.id.text1)
+        val flagIcon: ImageView = view.findViewById(R.id.imageView_flag)
+        val nameLabel: TextView = view.findViewById(R.id.textView_name)
     }
 }
