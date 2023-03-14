@@ -7,6 +7,7 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.recyclerview.widget.RecyclerView
 import com.sergeynv.holidays.R
 import com.sergeynv.holidays.data.Country
+import com.sergeynv.holidays.data.DayHolidays
 import com.sergeynv.holidays.data.Holiday
 import com.sergeynv.holidays.ui.HolidaysFilterStrategy.IN_A_NOT_IN_B
 import com.sergeynv.holidays.ui.HolidaysFilterStrategy.IN_BOTH

@@ -1,6 +1,5 @@
-package com.sergeynv.holidays.ui
+package com.sergeynv.holidays.data
 
-import com.sergeynv.holidays.data.Holiday
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -13,9 +12,13 @@ import java.util.Locale
  */
 internal data class DayHolidays(
     val date: Date,
-    val inA: List<Holiday>?, // Either null or not(!) empty
-    val inB: List<Holiday>?  // Either null or not(!) empty
+    val inA: List<Holiday>?, // Either null or not empty.
+    val inB: List<Holiday>?  // Either null or not empty.
 ) {
+    val isInBoth: Boolean = inA != null && inB != null
+    val isOnlyInA: Boolean = inA != null && inB == null
+    val isOnlyInB: Boolean = inA == null && inB != null
+
     init {
         inA?.let { require(it.isNotEmpty()) }
         inB?.let { require(it.isNotEmpty()) }
@@ -23,10 +26,6 @@ internal data class DayHolidays(
             "inA and inB must NOT be null at the same time"
         }
     }
-
-    val isInBoth: Boolean = inA != null && inB != null
-    val isOnlyInA: Boolean = inA != null && inB == null
-    val isOnlyInB: Boolean = inA == null && inB != null
 
     override fun toString(): String = """
         ${dateFormat.format(date)}
