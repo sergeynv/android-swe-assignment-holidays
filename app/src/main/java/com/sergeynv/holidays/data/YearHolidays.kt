@@ -2,7 +2,7 @@ package com.sergeynv.holidays.data
 
 import java.lang.IllegalStateException
 
-internal data class YearHolidays(
+data class YearHolidays(
     val year: Int,
     val countryA: Country?,
     val countryB: Country?,

@@ -10,7 +10,7 @@ import java.util.Locale
  * the "Feast of the Ascension of Jesus Christ".
  * https://holidayapi.com/v1/holidays?country=DE&year=2022&key=8780ae23-9cdd-4616-8b4e-c2b3107c2cdd&pretty
  */
-internal data class DayHolidays(
+data class DayHolidays(
     val date: Date,
     val inA: List<Holiday>?, // Either null or not empty.
     val inB: List<Holiday>?  // Either null or not empty.
