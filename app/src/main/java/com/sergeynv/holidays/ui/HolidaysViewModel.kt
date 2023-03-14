@@ -7,8 +7,8 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
-import com.sergeynv.holidays.api.HolidaysService
 import com.sergeynv.holidays.data.Country
+import com.sergeynv.holidays.di.Dependencies
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -16,6 +16,8 @@ import kotlinx.coroutines.plus
 import kotlinx.coroutines.withContext
 
 internal class HolidaysViewModel(application: Application) : AndroidViewModel(application) {
+    private val holidaysService = Dependencies.holidaysService
+
     val countries: LiveData<List<Country>>
     val isFetchingCountries: LiveData<Boolean>
 
@@ -32,22 +34,21 @@ internal class HolidaysViewModel(application: Application) : AndroidViewModel(ap
     }
 
     init {
-        val holidaysService = HolidaysService.retrofit
+        val countriesMutable = MutableLiveData<List<Country>>()
+        countries = countriesMutable
+        val isFetchingCountriesMutable = MutableLiveData(false)
+        isFetchingCountries = isFetchingCountriesMutable
 
-        val _countries = MutableLiveData<List<Country>>()
-        countries = _countries
-        val _isFetchingCountries = MutableLiveData(false)
-        isFetchingCountries = _isFetchingCountries
         scope.launch {
             Log.d(TAG, "Fetching country list...")
-            _isFetchingCountries.value = true
+            isFetchingCountriesMutable.value = true
             try {
-                _countries.value = holidaysService.getCountries()
+                countriesMutable.value = holidaysService.getCountries()
                     .also { Log.d(TAG, "getCountries() finished: $it") }
                     .countries
                     .let { list -> withContext(Dispatchers.Default) { list.sortedBy { it.name } } }
             } finally {
-                _isFetchingCountries.value = false
+                isFetchingCountriesMutable.value = false
             }
         }
 
