@@ -1,6 +1,90 @@
 package com.sergeynv.holidays.data
 
-interface HolidaysRepository {
-    suspend fun getCountries(): List<Country>
-    suspend fun getHolidays(year: Int, countryA: Country, countryB: Country? = null): YearHolidays
+import android.content.Context
+import android.widget.Toast
+import com.sergeynv.holidays.HolidaysApplication
+import com.sergeynv.holidays.api.HolidaysService
+import com.sergeynv.holidays.di.Dependencies
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.withContext
+import java.util.Date
+
+private typealias HolidaysListsPair = Pair<MutableList<Holiday>, MutableList<Holiday>>
+
+private val HolidaysListsPair.holidaysInA
+    get() = first
+private val HolidaysListsPair.holidaysInB
+    get() = second
+
+private typealias DateToHolidaysMap = MutableMap<Date, HolidaysListsPair>
+
+private fun DateToHolidaysMap.holidaysInA(on: Date) =
+    getOrPut(on) { (mutableListOf<Holiday>() to mutableListOf()) }.holidaysInA
+
+private fun DateToHolidaysMap.holidaysInB(on: Date) =
+    getOrPut(on) { (mutableListOf<Holiday>() to mutableListOf()) }.holidaysInB
+
+class HolidaysRepository(
+    private val holidaysService: HolidaysService = Dependencies.holidaysService
+) {
+    suspend fun getCountries(): List<Country> = holidaysService
+        .maybeToast { "Fetching countries..." }
+        .getCountries().countries
+        .maybeToast { "Fetched ${it.size} countries" }
+
+    suspend fun getHolidays(
+        year: Int,
+        countryA: Country? = null,
+        countryB: Country? = null
+    ): YearHolidays = coroutineScope {
+        require(countryA != null || countryB != null)
+
+        val fetchingA = countryA?.let { fetchHolidaysAsync(year, it) }
+        val fetchingB = countryB?.let { fetchHolidaysAsync(year, it) }
+
+        val holidaysInA = fetchingA?.await()
+        val holidaysInB = fetchingB?.await()
+
+        // We are going to do some merging and sorting, which should be all that CPU intensive, but
+        // just to be super safe let's make sure we are not doing this on the UI thread.
+        withContext(Dispatchers.Default) {
+            val dateToHolidaysMap: DateToHolidaysMap = mutableMapOf()
+            holidaysInA?.forEach { dateToHolidaysMap.holidaysInA(on = it.date).add(it) }
+            holidaysInB?.forEach { dateToHolidaysMap.holidaysInB(on = it.date).add(it) }
+
+            val holidaysList = dateToHolidaysMap.map {
+                DayHolidays(
+                    date = it.key,
+                    inA = if (countryA != null) it.value.holidaysInA else null,
+                    inB = if (countryA != null) it.value.holidaysInB else null
+                )
+            }.sortedBy { it.date }
+            //.also { Log.d(TAG, "  all:\n${it.joinToString("\n")}") }
+
+            YearHolidays(year, countryA, countryB, holidaysList)
+        }
+    }
+
+    private fun CoroutineScope.fetchHolidaysAsync(year: Int, country: Country) = async {
+        holidaysService
+            .maybeToast { "Fetching holidays in ${country.code} in $year..." }
+            .getHolidays(year, country.code).holidays
+            .maybeToast { "Fetched ${it.size} holidays in ${country.code} in $year" }
+    }
+
+    companion object {
+        private const val TAG = "HolidaysRepository"
+        private const val ENABLE_DEBUG_TOASTS = true
+
+        private val appContext: Context by lazy { HolidaysApplication.instance }
+
+        private fun <T> T.maybeToast(message: (T) -> String) = also {
+            if (ENABLE_DEBUG_TOASTS) {
+                Toast.makeText(appContext, message(it), Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
 }

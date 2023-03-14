@@ -1,5 +1,6 @@
-package com.sergeynv.holidays.data
+package com.sergeynv.holidays.api
 
+import com.sergeynv.holidays.data.Country
 import com.squareup.moshi.JsonClass
 
 @JsonClass(generateAdapter = true)
