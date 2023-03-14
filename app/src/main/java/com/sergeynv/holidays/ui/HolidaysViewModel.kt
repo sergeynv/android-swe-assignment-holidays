@@ -9,7 +9,6 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.sergeynv.holidays.api.HolidaysService
 import com.sergeynv.holidays.data.Country
-import com.sergeynv.holidays.utils.currentYear
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch

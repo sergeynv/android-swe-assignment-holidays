@@ -2,8 +2,6 @@ package com.sergeynv.holidays.ui
 
 import android.os.Bundle
 import android.view.View
-import android.widget.AdapterView
-import android.widget.AdapterView.OnItemSelectedListener
 import android.widget.ArrayAdapter
 import android.widget.Spinner
 import androidx.appcompat.app.AppCompatActivity
@@ -15,7 +13,6 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.sergeynv.holidays.R
 import com.sergeynv.holidays.data.Country
-import com.sergeynv.holidays.utils.currentYear
 
 class MainActivity : AppCompatActivity() {
     private val viewModel by lazy {
