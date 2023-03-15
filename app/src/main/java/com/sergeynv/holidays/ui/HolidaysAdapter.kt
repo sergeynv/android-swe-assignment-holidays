@@ -54,21 +54,22 @@ internal class HolidaysAdapter: RecyclerView.Adapter<DayHolidaysViewHolder>() {
             return
         }
 
-        if (countryA != null || countryB == null || filterStrategy == IN_EITHER) {
+        if (countryA == null || countryB == null || filterStrategy == IN_EITHER) {
             // We do not filter unless we have both countries. We also do not need to do any
             // filtering if "Show holidays in either A or B selected".
             filteredHolidays = allHolidays
-            return
-        }
-
-        filteredHolidays = allHolidays?.filter {
-            when(filterStrategy) {
-                IN_BOTH -> it.isInBoth
-                IN_A_NOT_IN_B -> it.isOnlyInA
-                IN_B_NOT_IN_A -> it.isOnlyInB
-                IN_EITHER -> throw RuntimeException("This is unreachable") // we handled this above.
+        } else {
+            filteredHolidays = allHolidays?.filter {
+                when(filterStrategy) {
+                    IN_BOTH -> it.isInBoth
+                    IN_A_NOT_IN_B -> it.isOnlyInA
+                    IN_B_NOT_IN_A -> it.isOnlyInB
+                    IN_EITHER -> throw RuntimeException("This is unreachable") // we handled this above.
+                }
             }
         }
+
+        notifyDataSetChanged()
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) =
