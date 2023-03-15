@@ -1,6 +1,7 @@
 package com.sergeynv.holidays.data
 
 import android.content.Context
+import android.util.Log
 import android.widget.Toast
 import com.sergeynv.holidays.HolidaysApplication
 import com.sergeynv.holidays.api.HolidaysService
@@ -16,8 +17,13 @@ private typealias HolidaysListsPair = Pair<MutableList<Holiday>, MutableList<Hol
 
 private val HolidaysListsPair.holidaysInA
     get() = first
+private val HolidaysListsPair.holidaysInAorNull
+    get() = holidaysInA.takeUnless { it.isEmpty() }
+
 private val HolidaysListsPair.holidaysInB
     get() = second
+private val HolidaysListsPair.holidaysInBorNull
+    get() = holidaysInB.takeUnless { it.isEmpty() }
 
 private typealias DateToHolidaysMap = MutableMap<Date, HolidaysListsPair>
 
@@ -31,9 +37,9 @@ class HolidaysRepository(
     private val holidaysService: HolidaysService = Dependencies.holidaysService
 ) {
     suspend fun getCountries(): List<Country> = holidaysService
-        .maybeToast { "Fetching countries..." }
+        .debug { "Fetching countries..." }
         .getCountries().countries
-        .maybeToast { "Fetched ${it.size} countries" }
+        .debug { "Fetched ${it.size} countries" }
 
     suspend fun getHolidays(
         year: Int,
@@ -58,11 +64,10 @@ class HolidaysRepository(
             val holidaysList = dateToHolidaysMap.map {
                 DayHolidays(
                     date = it.key,
-                    inA = if (countryA != null) it.value.holidaysInA else null,
-                    inB = if (countryA != null) it.value.holidaysInB else null
+                    inA = it.value.holidaysInAorNull,
+                    inB = it.value.holidaysInBorNull
                 )
             }.sortedBy { it.date }
-            //.also { Log.d(TAG, "  all:\n${it.joinToString("\n")}") }
 
             YearHolidays(year, countryA, countryB, holidaysList)
         }
@@ -70,9 +75,9 @@ class HolidaysRepository(
 
     private fun CoroutineScope.fetchHolidaysAsync(year: Int, country: Country) = async {
         holidaysService
-            .maybeToast { "Fetching holidays in ${country.code} in $year..." }
+            .debug { "Fetching holidays in ${country.code} in $year..." }
             .getHolidays(year, country.code).holidays
-            .maybeToast { "Fetched ${it.size} holidays in ${country.code} in $year" }
+            .debug { "Fetched ${it.size} holidays in ${country.code} in $year" }
     }
 
     companion object {
@@ -81,10 +86,12 @@ class HolidaysRepository(
 
         private val appContext: Context by lazy { HolidaysApplication.instance }
 
-        private fun <T> T.maybeToast(message: (T) -> String) = also {
+        private fun <T> T.debug(messageProducer: (T) -> String): T = messageProducer(this).let {
+            Log.d(TAG, it)
             if (ENABLE_DEBUG_TOASTS) {
-                Toast.makeText(appContext, message(it), Toast.LENGTH_SHORT).show()
+                Toast.makeText(appContext, it, Toast.LENGTH_SHORT).show()
             }
+            this
         }
     }
 }

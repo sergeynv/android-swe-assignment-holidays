@@ -1,7 +1,6 @@
 package com.sergeynv.holidays.ui
 
 import android.util.Log
-import android.widget.Toast
 import androidx.annotation.MainThread
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -58,10 +57,7 @@ internal class HolidaysViewModel : ViewModel() {
     val isFetchingHolidays: LiveData<Boolean> = _isFetchingHolidays
 
     private val scope by lazy {
-        viewModelScope + CoroutineExceptionHandler { _, throwable ->
-            Log.e(TAG, "Exception in a coroutine on ${Thread.currentThread()}: \n$throwable")
-            showToast(throwable.message ?: "Unknown error")
-        }
+        coroutineExceptionHandler?.let { viewModelScope + it } ?: viewModelScope
     }
 
     init {
@@ -101,10 +97,16 @@ internal class HolidaysViewModel : ViewModel() {
         }
     }
 
-    private fun showToast(message: String) =
-        Toast.makeText(HolidaysApplication.instance, message, Toast.LENGTH_SHORT).show()
-
     companion object {
         private const val TAG = "HolidaysViewModel"
+        private const val CATCH_COROUTINE_EXCEPTIONS = false
+
+        private val app by lazy { HolidaysApplication.instance }
+
+        private val coroutineExceptionHandler =
+            if (CATCH_COROUTINE_EXCEPTIONS) CoroutineExceptionHandler { _, throwable ->
+                Log.e(TAG, "Exception in a coroutine on ${Thread.currentThread()}: \n$throwable")
+                app.showToast(throwable.message ?: "Unknown error")
+            } else null
     }
 }
