@@ -3,12 +3,11 @@ package com.sergeynv.holidays.ui
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.ViewGroup
-import androidx.lifecycle.LifecycleOwner
 import androidx.recyclerview.widget.RecyclerView
 import com.sergeynv.holidays.R
-import com.sergeynv.holidays.data.Country
 import com.sergeynv.holidays.data.DayHolidays
 import com.sergeynv.holidays.data.Holiday
+import com.sergeynv.holidays.data.YearHolidays
 import com.sergeynv.holidays.ui.HolidaysFilterStrategy.IN_A_NOT_IN_B
 import com.sergeynv.holidays.ui.HolidaysFilterStrategy.IN_BOTH
 import com.sergeynv.holidays.ui.HolidaysFilterStrategy.IN_B_NOT_IN_A
@@ -16,12 +15,12 @@ import com.sergeynv.holidays.ui.HolidaysFilterStrategy.IN_EITHER
 import java.lang.RuntimeException
 import java.util.Date
 
-internal class HolidaysAdapter(
-    private val holidaysHolderA: CountryHolidaysHolder,
-    private val holidaysHolderB: CountryHolidaysHolder,
-    lifecycleOwner: LifecycleOwner
-) : RecyclerView.Adapter<DayHolidaysViewHolder>() {
-    private var allHolidays: List<DayHolidays>? = null
+internal class HolidaysAdapter: RecyclerView.Adapter<DayHolidaysViewHolder>() {
+    var yearHolidays: YearHolidays? = null
+        set(value) {
+            field = value
+            maybeFilterAndUpdate()
+        }
     private var filteredHolidays: List<DayHolidays>? = null
 
     // We only take this into account if we have holidays for both(!) countries.
@@ -30,56 +29,34 @@ internal class HolidaysAdapter(
     var filterStrategy = IN_EITHER
         set(value) {
             field = value
-            filter()
-            notifyDataSetChanged()
+            maybeFilterAndUpdate()
         }
 
-    init {
-        fun fullRecompute() {
-            compute()
-            filter()
-            notifyDataSetChanged()
-        }
-        holidaysHolderA.holidays.observe(lifecycleOwner) { fullRecompute() }
-        holidaysHolderB.holidays.observe(lifecycleOwner) { fullRecompute() }
-    }
-
-    private val countryA: Country?
-        get() = holidaysHolderA.country
+    private val countryA
+        get() = yearHolidays?.countryA
     private val countryB
-        get() = holidaysHolderB.country
+        get() = yearHolidays?.countryB
 
-    private val holidaysInA
-        get() = holidaysHolderA.holidays.value
-    private val holidaysInB
-        get() = holidaysHolderB.holidays.value
+    private fun maybeFilterAndUpdate() {
+        Log.d(TAG, "maybeFilterAndUpdate()")
 
-    private fun compute() {
-        Log.d(TAG, "compute()")
+        val allHolidays = yearHolidays?.holidays // Makes compiler happier below.
 
-        val dateToHolidaysMap =
-            mutableMapOf<Date, Pair<MutableList<Holiday>, MutableList<Holiday>>>()
-                .apply {
-                    holidaysInA?.forEach { getOrPut(it.date).first.add(it) }
-                    holidaysInB?.forEach { getOrPut(it.date).second.add(it) }
-                }
+        if (yearHolidays == null && filteredHolidays == null) {
+            // Have nothing to show now and had nothing to show before
+            return
+        } else if (yearHolidays == null) {
+            // Simply remove everything.
+            // Be sure to get item count before "unsetting" filteredHolidays.
+            itemCount
+                .also { filteredHolidays = null }
+                .let { notifyItemRangeRemoved(0, it) }
+            return
+        }
 
-        allHolidays = dateToHolidaysMap.map {
-            DayHolidays(
-                date = it.key,
-                inA = it.value.first.takeUnless { holidays -> holidays.isEmpty() },
-                inB = it.value.second.takeUnless { holidays -> holidays.isEmpty() },
-            )
-        }.sortedBy { it.date }
-            .also { Log.d(TAG, "  all:\n${it.joinToString("\n")}") }
-            .takeUnless { it.isEmpty() }
-    }
-
-    private fun filter() {
-        Log.d(TAG, "filter()")
-
-        if (holidaysInA == null || holidaysInB == null || filterStrategy == IN_EITHER) {
-            // We do not filter unless we have holidays for both countries!
+        if (countryA != null || countryB == null || filterStrategy == IN_EITHER) {
+            // We do not filter unless we have both countries. We also do not need to do any
+            // filtering if "Show holidays in either A or B selected".
             filteredHolidays = allHolidays
             return
         }

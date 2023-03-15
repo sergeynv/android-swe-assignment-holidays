@@ -1,30 +1,61 @@
 package com.sergeynv.holidays.ui
 
-import android.app.Application
 import android.util.Log
 import android.widget.Toast
-import androidx.lifecycle.AndroidViewModel
+import androidx.annotation.MainThread
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.sergeynv.holidays.HolidaysApplication
 import com.sergeynv.holidays.data.Country
-import com.sergeynv.holidays.di.Dependencies
+import com.sergeynv.holidays.data.HolidaysRepository
+import com.sergeynv.holidays.data.YearHolidays
+import com.sergeynv.holidays.ui.HolidaysFilterStrategy.IN_EITHER
 import kotlinx.coroutines.CoroutineExceptionHandler
-import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.plus
-import kotlinx.coroutines.withContext
 
-internal class HolidaysViewModel(application: Application) : AndroidViewModel(application) {
-    private val holidaysService = Dependencies.holidaysService
+internal class HolidaysViewModel : ViewModel() {
+    private val holidaysRepository = HolidaysRepository()
 
     val countries: LiveData<List<Country>>
     val isFetchingCountries: LiveData<Boolean>
 
-    val holidaysHolderA: CountryHolidaysHolder
-    val holidaysHolderB: CountryHolidaysHolder
+    // "Free accounts are limited to last year's historical data only. Upgrade to premium for
+    // access to all holiday data." (c) HolidaysApi.com
+    // The "initial" value is the only year our API will serve data for.
+    var year: Int? = currentYear - 1
+        @MainThread set(value) {
+            if (field == value) return
+            field = value
+            maybeRefetchHolidays()
+        }
 
-    var selectedHolidaysFilterStrategy = HolidaysFilterStrategy.IN_EITHER
+    var countryA: Country? = null
+        @MainThread set(value) {
+            if (field == value) return
+            field = value
+            maybeRefetchHolidays()
+        }
+
+    var countryB: Country? = null
+        @MainThread set(value) {
+            if (field == value) return
+            field = value
+            maybeRefetchHolidays()
+        }
+
+    var selectedHolidaysFilterStrategy = IN_EITHER
+
+    private var holidaysFetchingJob: Job? = null
+
+    private val _holidays = MutableLiveData<YearHolidays?>(null)
+    val holidays: LiveData<YearHolidays?> = _holidays
+
+    private val _isFetchingHolidays = MutableLiveData(false)
+    val isFetchingHolidays: LiveData<Boolean> = _isFetchingHolidays
 
     private val scope by lazy {
         viewModelScope + CoroutineExceptionHandler { _, throwable ->
@@ -40,31 +71,38 @@ internal class HolidaysViewModel(application: Application) : AndroidViewModel(ap
         isFetchingCountries = isFetchingCountriesMutable
 
         scope.launch {
-            Log.d(TAG, "Fetching country list...")
             isFetchingCountriesMutable.value = true
             try {
-                countriesMutable.value = holidaysService.getCountries()
-                    .also { Log.d(TAG, "getCountries() finished: $it") }
-                    .countries
-                    .let { list -> withContext(Dispatchers.Default) { list.sortedBy { it.name } } }
+                countriesMutable.value = holidaysRepository.getCountries()
             } finally {
                 isFetchingCountriesMutable.value = false
             }
         }
+    }
 
-        // "Free accounts are limited to last year's historical data only.
-        // Upgrade to premium for access to all holiday data."
-        // (c) HolidaysApi.com
-        // The "initial" value is the only year our API will serve data for.
-        val initialYear = currentYear - 1
-        holidaysHolderA = CountryHolidaysHolder(scope, holidaysService)
-            .apply { year = initialYear }
-        holidaysHolderB = CountryHolidaysHolder(scope, holidaysService)
-            .apply { year = initialYear }
+    @MainThread
+    private fun maybeRefetchHolidays() {
+        holidaysFetchingJob?.cancel()?.also {
+            holidaysFetchingJob = null
+        }
+        _holidays.value = null
+        _isFetchingHolidays.value = false
+
+        // Check if we have enough input to start fetching.
+        if (year == null || (countryA == null && countryB == null)) return
+
+        scope.launch {
+            _isFetchingHolidays.value = true
+            try {
+                _holidays.value = holidaysRepository.getHolidays(year!!, countryA, countryB)
+            } finally {
+                _isFetchingHolidays.value = false
+            }
+        }
     }
 
     private fun showToast(message: String) =
-        Toast.makeText(getApplication(), message, Toast.LENGTH_SHORT).show()
+        Toast.makeText(HolidaysApplication.instance, message, Toast.LENGTH_SHORT).show()
 
     companion object {
         private const val TAG = "HolidaysViewModel"

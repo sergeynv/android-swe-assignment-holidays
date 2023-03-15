@@ -18,7 +18,7 @@ class MainActivity : AppCompatActivity() {
     private val viewModel by lazy {
         ViewModelProvider(owner = this)[HolidaysViewModel::class.java]
     }
-    private lateinit var holidaysAdapter: HolidaysAdapter
+    private val holidaysAdapter = HolidaysAdapter()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -29,8 +29,10 @@ class MainActivity : AppCompatActivity() {
         val spinnerFilterStrategy = findViewById<Spinner>(R.id.spinner_filterStrategy)
             .apply {
                 isEnabled = false
-                adapter = ArrayAdapter(context, android.R.layout.simple_spinner_item,
-                    HolidaysFilterStrategy.getDescriptions(context))
+                adapter = ArrayAdapter(
+                    context, android.R.layout.simple_spinner_item,
+                    HolidaysFilterStrategy.getDescriptions(context)
+                )
                 onItemSelected { position ->
                     HolidaysFilterStrategy.values()[position].let {
                         viewModel.selectedHolidaysFilterStrategy = it
@@ -46,53 +48,50 @@ class MainActivity : AppCompatActivity() {
             .apply { isEnabled = false }
 
         val fetchingIndicator: View = findViewById(R.id.progressBar_fetching)
-        val holidaysListView = findViewById<RecyclerView>(R.id.recyclerView)
-            .apply { layoutManager = LinearLayoutManager(context) }
+
+        findViewById<RecyclerView>(R.id.recyclerView).apply {
+            layoutManager = LinearLayoutManager(context)
+            adapter = holidaysAdapter
+        }
 
         with(viewModel) {
             countries.observe { countries ->
-                spinnerCountryA.setUpForCountryChoice(countries,
-                    preselected = holidaysHolderA.country)
-                spinnerCountryB.setUpForCountryChoice(countries,
-                    preselected = holidaysHolderB.country)
+                spinnerCountryA.setUpForCountryChoice(countries, preselected = countryA)
+                spinnerCountryB.setUpForCountryChoice(countries, preselected = countryB)
             }
 
-            holidaysAdapter = HolidaysAdapter(holidaysHolderA, holidaysHolderB,
-                lifecycleOwner = this@MainActivity)
-            holidaysListView.adapter = holidaysAdapter
+            holidays.observe { holidaysAdapter.yearHolidays = it }
 
-            viewModel.selectedHolidaysFilterStrategy.let {
+            selectedHolidaysFilterStrategy.let {
                 spinnerFilterStrategy.setSelection(it.ordinal)
                 holidaysAdapter.filterStrategy = it
             }
 
             MediatorLiveData<Boolean>().apply {
                 val onChanged = Observer<Boolean> {
-                    value = holidaysHolderA.isFetching.value!! || holidaysHolderB.isFetching.value!!
+                    value = isFetchingCountries.value!! || isFetchingHolidays.value!!
                 }
-                addSource(holidaysHolderA.isFetching, onChanged)
-                addSource(holidaysHolderB.isFetching, onChanged)
+                addSource(isFetchingCountries, onChanged)
+                addSource(isFetchingHolidays, onChanged)
             }.observe { fetching ->
                 fetchingIndicator.visibility = if (fetching) View.VISIBLE else View.GONE
+
                 // Cheating a bit here, normally would create another MediatorLiveData.
                 // Generally we want to allow the user to choose the filtering strategy only if
                 // holidays for both countries are loaded.
-                spinnerFilterStrategy.isEnabled =
-                    holidaysHolderA.holidays.value != null && holidaysHolderB.holidays.value != null
+                spinnerFilterStrategy.isEnabled = countryA != null && countryB != null
             }
         }
 
         with(findViewById<Spinner>(R.id.spinner_year)) {
             val years = (currentYear - 10..currentYear + 10).toList()
-            val selectedYear = viewModel.holidaysHolderA.year
+            val selectedYear = viewModel.year
 
             adapter = ArrayAdapter(context, android.R.layout.simple_spinner_item, years)
             setSelection(years.indexOf(selectedYear))
 
             onItemSelected { position ->
-                val year = getItemAtPosition(position) as Int
-                viewModel.holidaysHolderA.year = year
-                viewModel.holidaysHolderB.year = year
+                viewModel.year = getItemAtPosition(position) as Int
             }
         }
     }
@@ -107,11 +106,13 @@ class MainActivity : AppCompatActivity() {
 
         // 3. Now that we restored the selection, set the selection listener.
         onItemSelected { position ->
-            when (id) {
-                R.id.spinner_countryA -> viewModel.holidaysHolderA
-                R.id.spinner_countryB -> viewModel.holidaysHolderB
-                else -> throw RuntimeException("Unexpected Spinner layout id")
-            }.country = countryListAdapter.getItem(position)
+            countryListAdapter.getItem(position).let {
+                when (id) {
+                    R.id.spinner_countryA -> viewModel.countryA = it
+                    R.id.spinner_countryB -> viewModel.countryB = it
+                    else -> throw RuntimeException("Unexpected Spinner layout id")
+                }
+            }
         }
 
         // 4. And finally let users to make selections (enable the Spinner).
