@@ -69,6 +69,8 @@ internal class HolidaysAdapter: RecyclerView.Adapter<DayHolidaysViewHolder>() {
             }
         }
 
+        // TODO: do a proper diffing instead of the "blanket" notify, if what's that changed is the
+        //  filtering strategy.
         notifyDataSetChanged()
     }
 
@@ -85,9 +87,5 @@ internal class HolidaysAdapter: RecyclerView.Adapter<DayHolidaysViewHolder>() {
 
     companion object {
         private const val TAG = "HolidaysAdapter"
-
-        private fun MutableMap<Date, Pair<MutableList<Holiday>, MutableList<Holiday>>>.getOrPut(
-            date: Date
-        ) = getOrPut(date) { (mutableListOf<Holiday>() to mutableListOf()) }
     }
 }

@@ -17,21 +17,21 @@ private typealias HolidaysListsPair = Pair<MutableList<Holiday>, MutableList<Hol
 
 private val HolidaysListsPair.holidaysInA
     get() = first
-private val HolidaysListsPair.holidaysInAorNull
+private val HolidaysListsPair.holidaysInA_NonEmpty
     get() = holidaysInA.takeUnless { it.isEmpty() }
 
 private val HolidaysListsPair.holidaysInB
     get() = second
-private val HolidaysListsPair.holidaysInBorNull
+private val HolidaysListsPair.holidaysInB_NonEmpty
     get() = holidaysInB.takeUnless { it.isEmpty() }
 
 private typealias DateToHolidaysMap = MutableMap<Date, HolidaysListsPair>
-
-private fun DateToHolidaysMap.holidaysInA(on: Date) =
-    getOrPut(on) { (mutableListOf<Holiday>() to mutableListOf()) }.holidaysInA
-
-private fun DateToHolidaysMap.holidaysInB(on: Date) =
-    getOrPut(on) { (mutableListOf<Holiday>() to mutableListOf()) }.holidaysInB
+private fun DateToHolidaysMap.holidaysOn(on: Date) =
+    getOrPut(on) { (mutableListOf<Holiday>() to mutableListOf()) }
+private fun DateToHolidaysMap.addHolidayInA(holiday: Holiday) =
+    holidaysOn(holiday.date).holidaysInA.add(holiday)
+private fun DateToHolidaysMap.addHolidayInB(holiday: Holiday) =
+    holidaysOn(holiday.date).holidaysInB.add(holiday)
 
 class HolidaysRepository(
     private val holidaysService: HolidaysService = Dependencies.holidaysService
@@ -58,14 +58,14 @@ class HolidaysRepository(
         // just to be super safe let's make sure we are not doing this on the UI thread.
         withContext(Dispatchers.Default) {
             val dateToHolidaysMap: DateToHolidaysMap = mutableMapOf()
-            holidaysInA?.forEach { dateToHolidaysMap.holidaysInA(on = it.date).add(it) }
-            holidaysInB?.forEach { dateToHolidaysMap.holidaysInB(on = it.date).add(it) }
+            holidaysInA?.forEach { dateToHolidaysMap.addHolidayInA(it) }
+            holidaysInB?.forEach { dateToHolidaysMap.addHolidayInB(it) }
 
             val holidaysList = dateToHolidaysMap.map {
                 DayHolidays(
                     date = it.key,
-                    inA = it.value.holidaysInAorNull,
-                    inB = it.value.holidaysInBorNull
+                    inA = it.value.holidaysInA_NonEmpty,
+                    inB = it.value.holidaysInB_NonEmpty
                 )
             }.sortedBy { it.date }
 
