@@ -6,14 +6,12 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.sergeynv.holidays.R
 import com.sergeynv.holidays.data.DayHolidays
-import com.sergeynv.holidays.data.Holiday
 import com.sergeynv.holidays.data.YearHolidays
 import com.sergeynv.holidays.ui.HolidaysFilterStrategy.IN_A_NOT_IN_B
 import com.sergeynv.holidays.ui.HolidaysFilterStrategy.IN_BOTH
 import com.sergeynv.holidays.ui.HolidaysFilterStrategy.IN_B_NOT_IN_A
 import com.sergeynv.holidays.ui.HolidaysFilterStrategy.IN_EITHER
 import java.lang.RuntimeException
-import java.util.Date
 
 internal class HolidaysAdapter: RecyclerView.Adapter<DayHolidaysViewHolder>() {
     var yearHolidays: YearHolidays? = null
@@ -76,13 +74,13 @@ internal class HolidaysAdapter: RecyclerView.Adapter<DayHolidaysViewHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) =
         LayoutInflater.from(parent.context)
-            .inflate(R.layout.list_item_holiday, parent, false)
+            .inflate(R.layout.list_item_day_holidays, parent, false)
             .let { DayHolidaysViewHolder(it) }
 
     override fun getItemCount(): Int = filteredHolidays?.size ?: 0
 
     override fun onBindViewHolder(holder: DayHolidaysViewHolder, position: Int) {
-        holder.bind(holidayHolder = filteredHolidays!![position], countryA, countryB)
+        holder.bind(dayHolidays = filteredHolidays!![position], countryA, countryB)
     }
 
     companion object {
