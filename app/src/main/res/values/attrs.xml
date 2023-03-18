@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <declare-styleable name="Theme.Holidays.List">
+    <declare-styleable name="Theme.Holidays.MainScreen">
         <attr name="dateContainerWidth" format="dimension" />
+        <attr name="labelStyle" format="reference" />
     </declare-styleable>
 </resources>

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Widget.AppCompat.TextView is the android:attr/textViewStyle
+         in Theme.MaterialComponents.DayNight.DarkActionBar -->
+    <style name="Widget.Holidays.Label" parent="@style/Widget.AppCompat.TextView">
+        <item name="android:textAppearance">?attr/textAppearanceBody1</item>
+        <item name="android:singleLine">true</item>
+    </style>
+</resources>

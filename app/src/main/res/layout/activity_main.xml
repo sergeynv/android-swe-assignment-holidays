@@ -15,9 +15,9 @@
         android:gravity="center_vertical">
 
         <TextView
-            android:layout_width="80dp"
+            style="@style/Widget.Holidays.Label"
+            android:layout_width="96dp"
             android:layout_height="wrap_content"
-            android:textAppearance="?attr/textAppearanceBody1"
             android:text="@string/label_country_a" />
 
         <Spinner
@@ -35,9 +35,9 @@
         android:gravity="center_vertical">
 
         <TextView
-            android:layout_width="80dp"
+            style="@style/Widget.Holidays.Label"
+            android:layout_width="96dp"
             android:layout_height="wrap_content"
-            android:textAppearance="?attr/textAppearanceBody1"
             android:text="@string/label_country_b" />
 
         <Spinner
@@ -55,9 +55,9 @@
         android:gravity="center_vertical">
 
         <TextView
+            style="@style/Widget.Holidays.Label"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textAppearance="?attr/textAppearanceBody1"
             android:text="@string/label_display_holidays" />
 
         <Spinner
