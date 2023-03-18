@@ -7,7 +7,7 @@
     android:padding="8dp">
 
     <LinearLayout
-        android:layout_width="@dimen/date_container_width"
+        android:layout_width="?attr/dateContainerWidth"
         android:layout_height="wrap_content"
         android:orientation="vertical"
         android:gravity="center_horizontal">
