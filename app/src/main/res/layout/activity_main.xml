@@ -8,69 +8,56 @@
     android:paddingHorizontal="16dp"
     tools:context=".ui.MainActivity">
 
-    <Spinner
-        android:id="@+id/spinner_year"
-        android:layout_width="160dp"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal"/>
-
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:orientation="horizontal">
+        android:orientation="horizontal"
+        android:gravity="center_vertical">
 
-        <LinearLayout
-            android:layout_width="0dp"
+        <TextView
+            android:layout_width="80dp"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:orientation="vertical"
-            android:gravity="center_horizontal"
-            android:layout_marginEnd="8dp">
+            android:textAppearance="?attr/textAppearanceBody1"
+            android:text="@string/label_country_a" />
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/label_country_a" />
-
-            <Spinner
-                android:id="@+id/spinner_countryA"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
-
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="0dp"
+        <Spinner
+            android:id="@+id/spinner_countryA"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:orientation="vertical"
-            android:gravity="center_horizontal">
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/label_country_b" />
-
-            <Spinner
-                android:id="@+id/spinner_countryB"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
-
-        </LinearLayout>
+            android:layout_marginStart="8dp"/>
 
     </LinearLayout>
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
+        android:orientation="horizontal"
+        android:gravity="center_vertical">
+
+        <TextView
+            android:layout_width="80dp"
+            android:layout_height="wrap_content"
+            android:textAppearance="?attr/textAppearanceBody1"
+            android:text="@string/label_country_b" />
+
+        <Spinner
+            android:id="@+id/spinner_countryB"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"/>
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:gravity="center_vertical">
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:textAppearance="?attr/textAppearanceBody1"
             android:text="@string/label_display_holidays" />
 
         <Spinner
@@ -79,6 +66,12 @@
             android:layout_height="wrap_content" />
 
     </LinearLayout>
+
+    <Spinner
+        android:id="@+id/spinner_year"
+        android:layout_width="160dp"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"/>
 
     <FrameLayout
         android:layout_width="match_parent"
