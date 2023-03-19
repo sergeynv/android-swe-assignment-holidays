@@ -3,8 +3,11 @@ package com.sergeynv.holidays.ui
 import android.os.Bundle
 import android.view.View
 import android.widget.ArrayAdapter
+import android.widget.AutoCompleteTextView
 import android.widget.Spinner
+import androidx.annotation.IdRes
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MediatorLiveData
 import androidx.lifecycle.Observer
@@ -41,23 +44,23 @@ class MainActivity : AppCompatActivity() {
                 }
             }
 
-        // Find and disable (until we have the list of countries) the Spinners.
-        val spinnerCountryA = findViewById<Spinner>(R.id.spinner_countryA)
-            .apply { isEnabled = false }
-        val spinnerCountryB = findViewById<Spinner>(R.id.spinner_countryB)
-            .apply { isEnabled = false }
-
-        val fetchingIndicator: View = findViewById(R.id.progressBar_fetching)
-
         findViewById<RecyclerView>(R.id.recyclerView).apply {
             layoutManager = LinearLayoutManager(context)
             adapter = holidaysAdapter
         }
 
+        val fetchingIndicator: View = findViewById(R.id.progressBar_fetching)
         with(viewModel) {
+            val countrySelectorA = countrySelectorController(R.id.countrySelectorA, "A") {
+                countryA = it
+            }
+            val countrySelectorB = countrySelectorController(R.id.countrySelectorB, "B") {
+                countryB = it
+            }
+
             countries.observe { countries ->
-                spinnerCountryA.setUpForCountryChoice(countries, preselected = countryA)
-                spinnerCountryB.setUpForCountryChoice(countries, preselected = countryB)
+                countrySelectorA.setUp(countries, preselected = countryA)
+                countrySelectorB.setUp(countries, preselected = countryB)
             }
 
             holidays.observe { holidaysAdapter.yearHolidays = it }
@@ -96,31 +99,17 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun Spinner.setUpForCountryChoice(countries: List<Country>, preselected: Country?) {
-        // 1. Create and set the adapter
-        val countryListAdapter = CountryListSpinnerAdapter(countries)
-        adapter = countryListAdapter
-
-        // 2. Set (restore) Spinner selection.
-        setSelection(countryListAdapter.getItemPosition(preselected))
-
-        // 3. Now that we restored the selection, set the selection listener.
-        onItemSelected { position ->
-            countryListAdapter.getItem(position).let {
-                when (id) {
-                    R.id.spinner_countryA -> viewModel.countryA = it
-                    R.id.spinner_countryB -> viewModel.countryB = it
-                    else -> throw RuntimeException("Unexpected Spinner layout id")
-                }
-            }
-        }
-
-        // 4. And finally let users to make selections (enable the Spinner).
-        isEnabled = true
-    }
+    private fun countrySelectorController(
+        @IdRes id: Int,
+        debugLabel: String,
+        listener: (Country?) -> Unit
+    ) = CountrySelectorController(findViewById(id), debugLabel, listener)
 
     private fun <T> LiveData<T>.observe(observer: Observer<T>) =
-        observe(this@MainActivity, observer)
+        observe(activityLifecycleOwner, observer)
+
+    private val activityLifecycleOwner: LifecycleOwner
+        get() = this
 
     companion object {
         private const val TAG = "MainActivity"

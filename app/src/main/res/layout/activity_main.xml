@@ -8,45 +8,21 @@
     android:paddingHorizontal="16dp"
     tools:context=".ui.MainActivity">
 
-    <LinearLayout
+    <AutoCompleteTextView
+        android:id="@+id/countrySelectorA"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="center_vertical">
+        android:maxLines="1"
+        android:inputType="text"
+        android:hint="Country A"/>
 
-        <TextView
-            style="@style/Widget.Holidays.Label"
-            android:layout_width="96dp"
-            android:layout_height="wrap_content"
-            android:text="@string/label_country_a" />
-
-        <Spinner
-            android:id="@+id/spinner_countryA"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"/>
-
-    </LinearLayout>
-
-    <LinearLayout
+    <AutoCompleteTextView
+        android:id="@+id/countrySelectorB"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="center_vertical">
-
-        <TextView
-            style="@style/Widget.Holidays.Label"
-            android:layout_width="96dp"
-            android:layout_height="wrap_content"
-            android:text="@string/label_country_b" />
-
-        <Spinner
-            android:id="@+id/spinner_countryB"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"/>
-
-    </LinearLayout>
+        android:maxLines="1"
+        android:inputType="text"
+        android:hint="Country B"/>
 
     <LinearLayout
         android:layout_width="match_parent"

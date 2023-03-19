@@ -9,4 +9,6 @@ data class Country(
     val name: String,
     val code: String,
     @Json(name = "flag") val flagUrl: URL
-)
+) {
+    val id = code.hashCode().toLong()
+}
