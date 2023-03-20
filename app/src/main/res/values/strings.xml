@@ -4,7 +4,7 @@
     <!-- MainActivity -->
     <string name="label_country_a">Country A</string>
     <string name="label_country_b">Country B</string>
-    <string name="label_display_holidays">Display holidays</string>
+    <string name="label_filter">Filter</string>
 
     <!-- Description for HolidayFilterStrategy-s -->
     <string name="holidays_filter_strategy_either">in either A or B or both</string>

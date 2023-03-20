@@ -2,6 +2,7 @@ package com.sergeynv.holidays.ui
 
 import android.os.Bundle
 import android.view.View
+import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.AutoCompleteTextView
 import android.widget.Spinner
@@ -29,15 +30,15 @@ class MainActivity : AppCompatActivity() {
         val context = this
 
         // Set up spinner with filter (strategy) options.
-        val spinnerFilterStrategy = findViewById<Spinner>(R.id.spinner_filterStrategy)
+        val filterSelector = findViewById<AutoCompleteTextView>(R.id.filterSelector)
             .apply {
-                isEnabled = false
-                adapter = ArrayAdapter(
-                    context, android.R.layout.simple_spinner_item,
-                    HolidaysFilterStrategy.getDescriptions(context)
-                )
-                onItemSelected { position ->
-                    HolidaysFilterStrategy.values()[position].let {
+                (parent as View).isEnabled = false
+                val adapter = ArrayAdapter(context, android.R.layout.simple_spinner_item,
+                    HolidaysFilterStrategy.getDescriptions(context))
+                setAdapter(adapter)
+
+                onItemClickListener = AdapterView.OnItemClickListener { _, _, i, _ ->
+                    HolidaysFilterStrategy.values()[i].let {
                         viewModel.selectedHolidaysFilterStrategy = it
                         holidaysAdapter.filterStrategy = it
                     }
@@ -66,7 +67,7 @@ class MainActivity : AppCompatActivity() {
             holidays.observe { holidaysAdapter.yearHolidays = it }
 
             selectedHolidaysFilterStrategy.let {
-                spinnerFilterStrategy.setSelection(it.ordinal)
+                filterSelector.setSelection(it.ordinal)
                 holidaysAdapter.filterStrategy = it
             }
 
@@ -82,7 +83,7 @@ class MainActivity : AppCompatActivity() {
                 // Cheating a bit here, normally would create another MediatorLiveData.
                 // Generally we want to allow the user to choose the filtering strategy only if
                 // holidays for both countries are loaded.
-                spinnerFilterStrategy.isEnabled = countryA != null && countryB != null
+                (filterSelector.parent as View).isEnabled = countryA != null && countryB != null
             }
         }
 
