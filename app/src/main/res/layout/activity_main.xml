@@ -8,25 +8,41 @@
     android:paddingHorizontal="16dp"
     tools:context=".ui.MainActivity">
 
-    <AutoCompleteTextView
-        android:id="@+id/countrySelectorA"
+    <com.google.android.material.textfield.TextInputLayout
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:maxLines="1"
-        android:inputType="text"
-        android:hint="Country A"/>
+        android:hint="@string/label_country_a">
 
-    <AutoCompleteTextView
-        android:id="@+id/countrySelectorB"
+        <AutoCompleteTextView
+            android:id="@+id/countrySelectorA"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:maxLines="1"
+            android:inputType="text"/>
+
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <com.google.android.material.textfield.TextInputLayout
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:maxLines="1"
-        android:inputType="text"
-        android:hint="Country B"/>
+        android:layout_marginTop="8dp"
+        android:hint="@string/label_country_b">
+
+        <AutoCompleteTextView
+            android:id="@+id/countrySelectorB"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:maxLines="1"
+            android:inputType="text"/>
+
+    </com.google.android.material.textfield.TextInputLayout>
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
         android:orientation="horizontal"
         android:gravity="center_vertical">
 
@@ -47,6 +63,7 @@
         android:id="@+id/spinner_year"
         android:layout_width="160dp"
         android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
         android:layout_gravity="center_horizontal"/>
 
     <FrameLayout
