@@ -15,6 +15,7 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.textfield.TextInputLayout
 import com.sergeynv.holidays.R
 import com.sergeynv.holidays.data.Country
 
@@ -29,11 +30,12 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
         val context = this
 
-        // Set up spinner with filter (strategy) options.
-        val filterSelector = findViewById<AutoCompleteTextView>(R.id.filterSelector)
+        // Set up filter (strategy) selector.
+        val filterSelectorInputLayout = findViewById<TextInputLayout>(R.id.filterSelectorInputLayout)
+        val filterSelector = filterSelectorInputLayout.findViewById<AutoCompleteTextView>(R.id.filterSelector)
             .apply {
                 (parent as View).isEnabled = false
-                val adapter = ArrayAdapter(context, android.R.layout.simple_spinner_item,
+                val adapter = ArrayAdapter(context, R.layout.list_item_filter_option,
                     HolidaysFilterStrategy.getDescriptions(context))
                 setAdapter(adapter)
 
@@ -67,7 +69,8 @@ class MainActivity : AppCompatActivity() {
             holidays.observe { holidaysAdapter.yearHolidays = it }
 
             selectedHolidaysFilterStrategy.let {
-                filterSelector.setSelection(it.ordinal)
+                // Set the default, or restore previously selected, filtering option.
+                filterSelector.setText(it.getDescription(context), /* filter */ false)
                 holidaysAdapter.filterStrategy = it
             }
 
@@ -81,9 +84,9 @@ class MainActivity : AppCompatActivity() {
                 fetchingIndicator.visibility = if (fetching) View.VISIBLE else View.GONE
 
                 // Cheating a bit here, normally would create another MediatorLiveData.
-                // Generally we want to allow the user to choose the filtering strategy only if
+                // Generally, we want to allow the user to choose the filtering strategy only if
                 // holidays for both countries are loaded.
-                (filterSelector.parent as View).isEnabled = countryA != null && countryB != null
+                filterSelectorInputLayout.isEnabled = countryA != null && countryB != null
             }
         }
 
