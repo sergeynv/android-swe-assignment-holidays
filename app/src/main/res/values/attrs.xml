@@ -3,5 +3,7 @@
     <declare-styleable name="Theme.Holidays.MainScreen">
         <attr name="dateContainerWidth" format="dimension" />
         <attr name="labelStyle" format="reference" />
+        <attr name="textAppearanceDropDownOption" format="reference" />
+        <attr name="dropDownOptionStyle" format="reference" />
     </declare-styleable>
 </resources>

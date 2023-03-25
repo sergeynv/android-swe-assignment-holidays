@@ -1,9 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources>
-    <!-- Widget.AppCompat.TextView is the android:attr/textViewStyle
-         in Theme.MaterialComponents.DayNight.DarkActionBar -->
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- android:attr/textViewStyle in Theme.MaterialComponents.DayNight.DarkActionBar =>
+         Widget.AppCompat.TextView -->
     <style name="Widget.Holidays.Label" parent="@style/Widget.AppCompat.TextView">
         <item name="android:textAppearance">?attr/textAppearanceBody1</item>
         <item name="android:singleLine">true</item>
+    </style>
+
+    <!-- ?attr/textAppearanceSubtitle1 in Theme.MaterialComponents.DayNight.DarkActionBar =>
+         TextAppearance.MaterialComponents.Subtitle1 -->
+    <style name="TextAppearance.Holidays.DropDownOption"
+        parent="TextAppearance.MaterialComponents.Subtitle1"/>
+
+    <style name="Widget.Holidays.TextView.DownDownOption" parent="">
+        <item name="android:paddingHorizontal" tools:ignore="NewApi">16dp</item>
+        <item name="android:paddingVertical" tools:ignore="NewApi">8dp</item>
+        <item name="android:textAppearance">?attr/textAppearanceDropDownOption</item>
+        <item name="android:maxLines">1</item>
+        <item name="android:singleLine">true</item>
+        <item name="android:ellipsize">marquee</item> <!-- or maybe "end"?-->
     </style>
 </resources>

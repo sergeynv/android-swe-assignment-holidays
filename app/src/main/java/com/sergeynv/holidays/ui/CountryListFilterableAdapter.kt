@@ -31,7 +31,7 @@ internal class CountryListFilterableAdapter(
 
     private fun createViewHolder(parent: ViewGroup): ViewHolder {
         val view = LayoutInflater.from(parent.context)
-            .inflate(R.layout.spinner_item_country, parent, false)
+            .inflate(R.layout.list_item_country, parent, false)
         return ViewHolder(view)
     }
 

@@ -16,10 +16,10 @@
 
     <TextView
         android:id="@+id/textView_name"
-        style="?android:attr/spinnerItemStyle"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:ellipsize="marquee"
-        android:singleLine="true"/>
+        style="?attr/dropDownOptionStyle"
+        android:paddingStart="2dp"
+        tools:text="Switzerland"/>
 
 </LinearLayout>

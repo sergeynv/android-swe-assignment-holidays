@@ -17,5 +17,7 @@
     <style name="Theme.Holidays.MainScreen">
         <item name="dateContainerWidth">@dimen/date_container_width</item>
         <item name="labelStyle">@style/Widget.Holidays.Label</item>
+        <item name="textAppearanceDropDownOption">@style/TextAppearance.Holidays.DropDownOption</item>
+        <item name="dropDownOptionStyle">@style/Widget.Holidays.TextView.DownDownOption</item>
     </style>
 </resources>
